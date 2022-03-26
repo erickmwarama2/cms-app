@@ -1,12 +1,18 @@
 package springfive.cms.domain.service;
 
-import java.util.List;
-import java.util.UUID;
+import org.springframework.stereotype.Service;
 
+// import java.util.List;
+// import java.util.UUID;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import springfive.cms.domain.models.User;
 import springfive.cms.domain.repository.UserRepository;
+// import springfive.cms.domain.vo.UserRequest;
 import springfive.cms.domain.vo.UserRequest;
 
+@Service
 public class UserService {
     
     private final UserRepository userRepository;
@@ -15,18 +21,20 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User update(String id, UserRequest userRequest) {
-        final User user = this.userRepository.findOne(id);
-        user.setIdentity(userRequest.getIdentity());
-        user.setName(userRequest.getName());
-        user.setRole(userRequest.getRole());
+    public Mono<User> update(String id, UserRequest userRequest) {
+        return this.userRepository.findById(id)
+        .flatMap(userDb -> {
+            userDb.setName(userRequest.getName());
+            userDb.setIdentity(userRequest.getIdentity());
+            userDb.setRole(userRequest.getRole());
 
-        return this.userRepository.save(user);
+            return this.userRepository.save(userDb);
+        });
     }
 
-    public User create(UserRequest userRequest) {
+    public Mono<User> create(UserRequest userRequest) {
         User user = new User();
-        user.setId(UUID.randomUUID().toString());
+        // user.setId(UUID.randomUUID().toString());
         user.setIdentity(userRequest.getIdentity());
         user.setName(userRequest.getName());
         user.setRole(userRequest.getRole());
@@ -35,15 +43,16 @@ public class UserService {
     }
 
     public void delete(String id) {
-        final User user = this.userRepository.findOne(id);
-        this.userRepository.delete(user);
+        // final User user = this.userRepository.findOne(id);
+        // this.userRepository.delete(user);
+        this.userRepository.deleteById(id);
     }
 
-    public List<User> findAll() {
+    public Flux<User> findAll() {
         return this.userRepository.findAll();
     }
 
-    public User findOne(String id) {
-        return this.userRepository.findOne(id);
+    public Mono<User> findOne(String id) {
+        return this.userRepository.findById(id);
     }
 }
